@@ -37,3 +37,4 @@ test-suite sexagesimal-test
   build-depends:
     , base
     , sexagesimal
+    , hspec
