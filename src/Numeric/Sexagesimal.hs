@@ -19,6 +19,3 @@ asSexagesimalDigits s = go s where
   go 0 = []
   go x = i : go (abs f * 60)
     where (i, f) = properFraction x
-
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
