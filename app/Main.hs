@@ -1,17 +1,18 @@
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Main where
 
 import Data.Foldable (for_)
 import Numeric (readFloat, readSigned)
-import Numeric.Sexagesimal (Sexagesimal)
 import Options.Applicative
 import System.IO (hPutStrLn, stderr)
 import Text.Read (readMaybe)
 
 import qualified System.Console.Terminal.Size as TS
+
+import Numeric.Sexagesimal (Sexagesimal)
 
 data Direction = From | To
   deriving (Show)
@@ -19,28 +20,31 @@ data Direction = From | To
 data Options = Options
   { optNumbers :: [String]
   , optDirection :: Direction
-  } deriving (Show)
+  }
+  deriving (Show)
 
 main :: IO ()
 main = do
-
   cols <- maybe 100 TS.width <$> TS.size
 
-  Options {..} <- customExecParser
-    ( prefs $ columns cols )
-    ( info
-      ( helper <*> do
-          optDirection <- flag To From $
-            help "Convert from sexagesimal instead of to it"
-              <> short 'f'
-              <> long "from"
-          optNumbers <- some . strArgument $
-            help "Numbers to be converted"
-              <> metavar "NUMBER ..."
-          pure Options{..}
+  Options {..} <-
+    customExecParser
+      (prefs $ columns cols)
+      ( info
+          ( helper <*> do
+              optDirection <-
+                flag To From $
+                  help "Convert from sexagesimal instead of to it"
+                    <> short 'f'
+                    <> long "from"
+              optNumbers <-
+                some . strArgument $
+                  help "Numbers to be converted"
+                    <> metavar "NUMBER ..."
+              pure Options {..}
+          )
+          (fullDesc <> header "Convert numbers to or from sexagesimal (base 60) notation")
       )
-      ( fullDesc <> header "Convert numbers to or from sexagesimal (base 60) notation" )
-    )
 
   for_ optNumbers $
     either (hPutStrLn stderr) putStrLn . convert optDirection

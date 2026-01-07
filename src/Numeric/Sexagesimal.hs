@@ -19,19 +19,23 @@ instance Read Sexagesimal where
 -- Note that the output will be infinite if the denominator has a prime factor > 5
 showSexagesimal :: Rational -> String
 showSexagesimal = intercalate ":" . zipWith ($) (show : repeat showPadded) . toSexagesimalDigits
- where showPadded = printf "%02d"
+ where
+  showPadded = printf "%02d"
 
 -- Note that the output will be infinite if the denominator has a prime factor > 5
 toSexagesimalDigits :: Rational -> [Int]
 toSexagesimalDigits 0 = [0]
-toSexagesimalDigits s = go s where
+toSexagesimalDigits s = go s
+ where
   go 0 = []
   go x = i : go (abs f * 60)
-    where (i, f) = properFraction x
+   where
+    (i, f) = properFraction x
 
 readSexagesimal :: ReadPrec Rational
-readSexagesimal = fmap fromSexagesimalDigits $
-  (:) <$> signed <*> many (colon *> unsigned)
+readSexagesimal =
+  fmap fromSexagesimalDigits $
+    (:) <$> signed <*> many (colon *> unsigned)
  where
   colon = lift $ char ':'
   signed = readPrec
