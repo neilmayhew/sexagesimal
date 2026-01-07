@@ -1,7 +1,6 @@
-{-# LANGUAGE TypeApplications #-}
-
 module Numeric.Sexagesimal where
 
+import Control.Monad (guard)
 import Data.List (intercalate)
 import Text.ParserCombinators.ReadPrec
 import Text.ParserCombinators.ReadP (char)
@@ -34,7 +33,10 @@ parseSexagesimal = fmap fromSexagesimalDigits $
  where
   colon = lift $ char ':'
   signed = readPrec
-  unsigned = fromEnum @Word <$> readPrec
+  unsigned = do
+    i <- signed
+    guard $ i >= 0
+    pure i
   many p = pure [] +++ some p
   some p = (:) <$> p <*> many p
 
