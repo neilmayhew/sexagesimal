@@ -2,33 +2,35 @@ module Numeric.Sexagesimal where
 
 import Control.Monad (guard)
 import Data.List (intercalate)
-import Text.ParserCombinators.ReadPrec
 import Text.ParserCombinators.ReadP (char)
 import Text.Printf (printf)
-import Text.Read
+import Text.Read (Read (readPrec), ReadPrec, lift, (+++))
 
+-- | A newtype wrapper to read and show in sexagesimal notation
 newtype Sexagesimal = Sexagesimal Rational
   deriving (Eq, Ord, Enum, Num, Fractional, Real, RealFrac)
 
 instance Show Sexagesimal where
   show (Sexagesimal r) = showSexagesimal r
 
+instance Read Sexagesimal where
+  readPrec = Sexagesimal <$> readSexagesimal
+
+-- Note that the output will be infinite if the denominator has a prime factor > 5
 showSexagesimal :: Rational -> String
-showSexagesimal = intercalate ":" . zipWith ($) (show : repeat showPadded) . asSexagesimalDigits
+showSexagesimal = intercalate ":" . zipWith ($) (show : repeat showPadded) . toSexagesimalDigits
  where showPadded = printf "%02d"
 
-asSexagesimalDigits :: Rational -> [Int]
-asSexagesimalDigits 0 = [0]
-asSexagesimalDigits s = go s where
+-- Note that the output will be infinite if the denominator has a prime factor > 5
+toSexagesimalDigits :: Rational -> [Int]
+toSexagesimalDigits 0 = [0]
+toSexagesimalDigits s = go s where
   go 0 = []
   go x = i : go (abs f * 60)
     where (i, f) = properFraction x
 
-instance Read Sexagesimal where
-  readPrec = Sexagesimal <$> parseSexagesimal
-
-parseSexagesimal :: ReadPrec Rational
-parseSexagesimal = fmap fromSexagesimalDigits $
+readSexagesimal :: ReadPrec Rational
+readSexagesimal = fmap fromSexagesimalDigits $
   (:) <$> signed <*> many (colon *> unsigned)
  where
   colon = lift $ char ':'
@@ -37,6 +39,7 @@ parseSexagesimal = fmap fromSexagesimalDigits $
     i <- signed
     guard $ i >= 0
     pure i
+  -- These are missing from "Text.ParserCombinators.ReadPrec"
   many p = pure [] +++ some p
   some p = (:) <$> p <*> many p
 
