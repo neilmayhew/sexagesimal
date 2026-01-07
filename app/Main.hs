@@ -43,7 +43,16 @@ main = do
                     <> metavar "NUMBER ..."
               pure Options {..}
           )
-          (fullDesc <> header "Convert numbers to or from sexagesimal (base 60) notation")
+          ( fullDesc
+              <> header "Convert numbers to or from sexagesimal (base 60) notation"
+              <> footer
+                ( unwords
+                    [ "Times and angles are often expressed as sexagesimal numbers."
+                    , "This program uses ':' to separate successive sexagesimal digits,"
+                    , "and the digits are represented as zero-padded decimal numbers."
+                    ]
+                )
+          )
       )
 
   for_ optNumbers $
