@@ -4,7 +4,7 @@ module Numeric.Sexagesimal where
 
 import Data.List (intercalate)
 import Text.ParserCombinators.ReadPrec
-import Text.ParserCombinators.ReadP
+import Text.ParserCombinators.ReadP (char)
 import Text.Printf (printf)
 import Text.Read
 
@@ -26,15 +26,17 @@ asSexagesimalDigits s = go s where
     where (i, f) = properFraction x
 
 instance Read Sexagesimal where
-  readPrec = Sexagesimal <$> lift parseSexagesimal
+  readPrec = Sexagesimal <$> parseSexagesimal
 
-parseSexagesimal :: ReadP Rational
+parseSexagesimal :: ReadPrec Rational
 parseSexagesimal = fmap fromSexagesimalDigits $
   (:) <$> signed <*> many (colon *> unsigned)
  where
-  colon = char ':'
-  signed = readPrec_to_P readPrec minPrec
-  unsigned = fromEnum @Word <$> readPrec_to_P readPrec minPrec
+  colon = lift $ char ':'
+  signed = readPrec
+  unsigned = fromEnum @Word <$> readPrec
+  many p = pure [] +++ some p
+  some p = (:) <$> p <*> many p
 
 fromSexagesimalDigits :: [Int] -> Rational
 fromSexagesimalDigits [] = 0
