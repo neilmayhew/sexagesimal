@@ -1,10 +1,11 @@
 module Numeric.Sexagesimal where
 
+import Control.Applicative (many)
 import Control.Monad (guard)
 import Data.List (intercalate)
 import Text.ParserCombinators.ReadP (char)
 import Text.Printf (printf)
-import Text.Read (Read (readPrec), ReadPrec, lift, (+++))
+import Text.Read (Read (readPrec), ReadPrec, lift)
 
 -- | A newtype wrapper to read and show in sexagesimal notation
 newtype Sexagesimal = Sexagesimal Rational
@@ -43,9 +44,6 @@ readSexagesimal =
     i <- signed
     guard $ i >= 0
     pure i
-  -- These are missing from "Text.ParserCombinators.ReadPrec"
-  many p = pure [] +++ some p
-  some p = (:) <$> p <*> many p
 
 fromSexagesimalDigits :: [Int] -> Rational
 fromSexagesimalDigits [] = 0
